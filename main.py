@@ -11,6 +11,9 @@ api_key = os.getenv("API_KEY")
 
 cwd = os.getcwd() + "/"
 
+# TODO I'm going to have to save this value into the json. Once the user restarts the program, and is one hour after the last time use, then reset the counter back to 25. Otherwise, keep lowering that shit.
+api_limit = 25
+
 def cityForecast(city, key):
     # Careful uploading this on github, my API token is in here. 
     while True:
@@ -162,25 +165,52 @@ def newUser():
         
         # TODO give user the option to reset their key incase they fuck up. It's bound to happen. 
 
+def newUnitValue():
+    data = loadJsonFile('data.json')
+    
+    newUnitValue = str(input("What unit do you prefer (imperial/metric) : "))
+    newUnitValue = newUnitValue.lower()
+    # This functions ensures the user is providing a valid unit.
+    preferredUnits(newUnitValue)
+    data['User']['preferredUnit'] = newUnitValue
+    print("Preference saved!")
+    
+    
 def getUnitValue():
     data = loadJsonFile('data.json')
     
     UnitData = data.get('User', {}).get('preferredUnit', None)
     
     if UnitData == None:
-        newUnitValue = str(input("What unit do you prefer (imperial/metric) : "))
-        newUnitValue = newUnitValue.lower()
-        # This functions ensures the user is providing a valid unit.
-        preferredUnits(newUnitValue)
-        data['User']['preferredUnit'] = newUnitValue
+        newUnitValue()
         
     elif 'imperial' in data['User']['preferredUnit']:
-        None
+        newUnitValue()
+        
     elif 'metric' in data['User']['preferredUnit']:
-        None
-    # wtf does this mean??? Bozo
+        newUnitValue()
     else:
         None
+
+def mainMenu():
+    # This shit looks ugly af.
+    print("""-------------------- Main Menu --------------------
+(NOTE: Program will run program if idle for more than 20 seconds.)
+1. Run program
+2. Modify API
+3. Change Unit (metric/imperial)
+          """)
+    menuSelection = input(str("Input: "))
+    
+    if menuSelection == "1":
+        main()
+    elif menuSelection == "2":
+        None
+        # TODO write some shit here
+    elif menuSelection == "3":
+       getUnitValue()
+            
+    
 
 def main():
     # TODO Create a main menu page. From here, the user can select what they want to do.
@@ -191,9 +221,8 @@ def main():
         None
     else:
         createUserJsonFile()
-    
     lastLogin()
-    print("Welcome to the weather app!")
+    print(f"Welcome to the weather app! You can make 25 request per hour. \nRemaing requests: {api_limit}")
     
     # If its the users first time visiting, run the function, otherwise continue.
     if os.path.exists(os.path.join(cwd, '.env')):
@@ -211,4 +240,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    mainMenu()
